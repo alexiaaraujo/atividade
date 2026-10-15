@@ -1,4 +1,4 @@
-# FIAP - Faculdade de Informática e Administração Paulista
+# e um projeto parecido mas com outro foco
 
 <p align="center">
   <a href="https://www.fiap.com.br/">

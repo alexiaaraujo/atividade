@@ -28,7 +28,7 @@
 - André Godoi
   
 
-# Sistema Inteligente de Alerta de Enchentes para Recife
+# Sistema Inteligente de Alerta de Enchentes para Recife ( a ideia poderia ser utilizada em palmares )
 
 [![Assista ao vídeo](https://img.youtube.com/vi/Vx-_03hVFBA/0.jpg)](https://youtu.be/Vx-_03hVFBA)
 

@@ -282,74 +282,45 @@ Este módulo consolida a inteligência do sistema para disparar o diagnóstico f
 
 ---
 
-### ✅ Requisitos
+Pré-requisitos e Dependências
+Para executar este projeto com sucesso, certifique-se de ter instalado em sua máquina:
+ * Visual Studio Code (VS Code)
+ * Git (para clonar o repositório)
+ * Extensões do VS Code:
+   * PlatformIO IDE (ícone da formiguinha 🐜)
+   * Wokwi for VS Code (ícone de simulação <>)
+   * SQL Viewer
+ * Bibliotecas Python necessárias:
+   pip install streamlit pandas matplotlib seaborn paho-mqtt scikit-learn
 
-- [Visual Studio Code (VS Code)](https://code.visualstudio.com/)
-- Extensões instaladas no VS Code:
-  - **PlatformIO IDE** (ícone da formiguinha 🐜)
-  - **Wokwi for VS Code** (ícone com `<>` da simulação)
-  - **SQL Viewer**
-- Git instalado na máquina (para clonar o repositório)
-- As seguintes bibliotecas instaladas:
-  ```bash
-  pip install streamlit pandas matplotlib seaborn paho-mqtt scikit-learn
-  ```
+Passo a Passo
+Parte 1 – Simulação do Hardware (ESP32 no Wokwi)
+ * Clone o repositório
+   Abra o seu terminal e execute o comando abaixo:
+   git clone https://github.com/fiap-ia-2025/gs1-phase4-flood-alert-system.git
 
-## 🔧 Passo a Passo
+ * Abra o projeto no VS Code
+   * Atenção: Não abra a pasta raiz do repositório.
+   * No VS Code, vá em Arquivo > Abrir Pasta... e selecione diretamente a subpasta iot-sensor-module em uma nova janela.
+ * Compile o projeto com o PlatformIO
+   * Clique no ícone da formiguinha 🐜 (PlatformIO) no menu lateral esquerdo do VS Code.
+   * Na aba de projetos, clique em "Build" para compilar o arquivo main.cpp e aguarde a conclusão do processo.
+ * Execute a simulação no Wokwi
+   * Pressione Ctrl + Shift + P (Cmd + Shift + P no Mac) para abrir a Command Palette.
+   * Digite e selecione: Wokwi: Start Simulation.
+   * A simulação abrirá automaticamente no seu navegador com o firmware compilado e pronto para uso.
+> 💡 Nota: O código da pasta iot-sensor-module/ também pode ser carregado diretamente no simulador Wokwi, caso prefira não utilizar o VS Code nesta etapa.
+> 
+Parte 2 – Executando a Integração com Python
+Abra uma nova janela do VS Code e selecione exclusivamente a pasta python-backend.
+O repositório já inclui um arquivo de banco de dados (python-backend/projeto.db) pré-populado com dados de uma simulação de 2 ciclos completos (cerca de 7 minutos e 30 segundos, gerando mais de 200 registros). Essa é a forma recomendada para uma avaliação rápida.
+ * Abra o terminal integrado na pasta correta:
+   cd python-backend
 
-### Parte 1 – Simulação do Hardware (ESP32 no Wokwi)
+ * Execute o script de teste e análise:
+   python testar_analise.py
 
-1. **Clone o repositório**
-
-   - Abra o terminal
-   - Execute o comando:
-
-     ```bash
-     git clone https://github.com/fiap-ia-2025/gs1-phase4-flood-alert-system.git
-     ```
-
-<br>
-
-2. **Abra o VS Code e carregue apenas a pasta iot-sensor-module como uma janela separada.**
-
-- Não abra a pasta raiz do repositório. Clique em "Abrir Pasta" no VS Code e selecione diretamente `iot-sensor-module`.
-
-<br>
-
-3. **Compile o projeto com PlatformIO**
-
-- No VS Code, clique no ícone da formiguinha 🐜 (PlatformIO) no menu lateral esquerdo
-- Clique em **"Build"** para compilar o `main.cpp` (aguarde a conclusão)
-
-<br>
-
-4. **Execute a simulação com Wokwi**
-
-- Pressione `Ctrl+Shift+P` (ou `Cmd+Shift+P` no Mac) para abrir a Command Palette
-- Digite `>Wokwi: Start Simulation` e pressione Enter
-- A simulação será aberta no navegador com o firmware já compilado
-
-
-**OBS: O código em `iot-sensor-module/` pode ser aberto com o PlatformIO no VS Code (passo a passo acima) ou carregado diretamente no simulador Wokwi.**
-
-### Parte 2 – Como Executar a integração com Python
-- Abra outra janela do VS Code e carregue apenas a pasta `python-backend`
-  
-- Existem duas formas de testar o sistema:
-
-**Opção 1: Utilizando o Banco de Dados Existente (Recomendado para Avaliação Rápida)**
-
-O repositório já inclui um arquivo `python-backend/projeto.db` populado com dados de uma simulação de 2 ciclos completos (aproximadamente 7 minutos e 30 segundos de simulação, gerando mais de 200 registros).
-
-1.  Navegue até a pasta `python-backend`:
-    ```bash
-    cd python-backend
-    ```
-2.  Execute o script de teste da análise:
-    ```bash
-    python testar_analise.py
-    ```
-    Isso carregará os dados do `projeto.db` existente, treinará o modelo de ML (se for a primeira vez) e processará todos os registros, mostrando a evolução do status do alerta.
+   * O que acontece agora: O script carregará automaticamente os dados do arquivo projeto.db, fará o treinamento do modelo de Machine Learning (caso seja a primeira execução) e processará todos os registros, exibindo em tempo real a evolução dos status de alerta.
 
 **Opção 2: Começando do Zero (Gerando Novos Dados)**
 
@@ -405,16 +376,19 @@ A calibração e contextualização deste projeto foram baseadas em dados e info
     * Documento de Referência: *Relatório de Atividades e Cumprimento de Metas – Progestão Ciclo 2022 (PE)*.
     * Link Direto: [APAC/ANA - Relatório Progestão PE 2022 (PDF, ver Tabela 5, pág. 10)](https://progestao.ana.gov.br/progestao-1/certificacao/certificacoes-2013-a-2018/certificacao-2022/certificacao-das-metas-federativas-2022/relatorios-progestao-2022/pe_relatorio_progestao_apac_2022.pdf)
 
-* **Dados Pluviométricos Históricos de Recife (Diários/Mensais):**
-    * A análise de eventos de chuva extremos, bem como a calibração da intensidade e da dinâmica da precipitação na simulação do sistema, foram baseadas em dados históricos diários reais de estações pluviométricas em Recife.
-    * Fonte: Agência Pernambucana de Águas e Clima (APAC) - Plataforma de Coleta de Dados.
-    * Link de Acesso ao Monitoramento: [APAC - Monitoramento Pluviométrico](http://www.apac.pe.gov.br/meteorologia/monitoramento-pluviometrico.php](http://old.apac.pe.gov.br/meteorologia/monitoramento-pluvio.php)
-    * Período Específico Analisado para Calibração Detalhada da Simulação: Para a construção do "roteiro" do evento extremo simulado no Wokwi (incluindo a progressão da chuva ao longo das 5 fases), foram analisados em detalhe os dados diários do período de **1º de maio de 2024 a 31 de julho de 2024**.
-    * Justificativa da Escolha do Período (01/05/2024 - 31/07/2024): Este intervalo foi selecionado por:
-        * Abranger o núcleo da estação chuvosa de Recife, historicamente associada aos maiores volumes pluviométricos e riscos de inundação.
-        * Permitir a observação e análise de eventos de precipitação completos, incluindo seus picos, durações e sequências de dias chuvosos.
-        * Representar o ciclo chuvoso completo mais recente, fornecendo dados relevantes para os padrões climáticos atuais.
-    * *Desta análise detalhada, o evento específico ocorrido em meados de junho de 2024 (com picos diários superiores a 180mm em algumas estações) foi utilizado como principal inspiração para modelar as fases e a intensidade da chuva na simulação do Wokwi.*
+Dados Pluviométricos Históricos de Recife (Diários e Mensais)
+​Fonte e Emprego dos Dados:
+A análise de eventos climáticos extremos e a calibração da dinâmica de precipitação no simulador foram baseadas em dados históricos diários reais de estações pluviométricas de Recife.
+​Fonte: Agência Pernambucana de Águas e Clima (APAC) – Plataforma de Coleta de Dados.
+​Acesso aos Dados: APAC - Monitoramento Pluviométrico
+​Período de Referência:
+Para a construção do "roteiro" do evento extremo simulado no Wokwi (que orienta a progressão da chuva ao longo de 5 fases), foram analisados em detalhe os registros diários do período de 1º de maio de 2024 a 31 de julho de 2024.
+​Justificativa do Recorte Temporal (01/05/2024 a 31/07/2024):
+​Núcleo da Estação Chuvosa: Coincide com o quadrimestre de maior índice pluviométrico e histórico recorrente de inundações em Recife.
+​Análise de Eventos Completos: Permitiu mapear o ciclo integral de tempestades, observando sequências de dias chuvosos, durações e volumes de pico.
+​Representatividade Recente: Reflete o padrão de precipitação e eventos climáticos extremos atuais da região.
+​💡 Inspiração para a Simulação (Wokwi):
+A modelagem das 5 fases da chuva no Wokwi tomou como base principal o evento extremo registrado em meados de junho de 2024, no qual algumas estações da cidade registraram picos diários superiores a 180 mm.
 
 * **Padrões de Intensidade de Chuva (mm/h):**
     * Os limiares numéricos para definir a intensidade da chuva instantânea no sistema (ex: >25 mm/h para chuvas fortes, >50 mm/h para eventos extremos) são baseados nos padrões de classificação do Instituto Nacional de Meteorologia (INMET).

@@ -30,70 +30,86 @@
 
 # Sistema Inteligente de Alerta de Enchentes para Recife ( a ideia poderia ser utilizada em palmares )
 
-[![Assista ao vídeo](https://img.youtube.com/vi/Vx-_03hVFBA/0.jpg)](https://youtu.be/Vx-_03hVFBA)
+📖 Descrição do Projeto
 
+Este sistema é uma solução digital desenvolvida no âmbito da Global Solution 2025.1 da FIAP, com o objetivo de prever e monitorar os riscos de enchentes na cidade do Recife, Pernambuco (com potencial de adaptação para outros municípios vulneráveis, como Palmares). Utilizando uma abordagem baseada em dados, o sistema simula um ambiente com sensores IoT, coleta e processa essas informações em tempo real, e emprega um modelo de Machine Learning em conjunto com regras de negócio para classificar o nível de risco e emitir alertas preventivos.
 
-## 📖 Descrição do Projeto
+Este projeto visa demonstrar como a tecnologia e a Inteligência Artificial podem ser aplicadas para mitigar os impactos de eventos naturais extremos, oferecendo uma ferramenta proativa e confiável para a Defesa Civil e para a população.
 
-Este sistema é uma solução digital desenvolvida no âmbito da Global Solution 2025.1 da FIAP, com o objetivo de prever e monitorar os riscos de enchentes na cidade do Recife, Pernambuco. Utilizando uma abordagem baseada em dados, o sistema simula um ambiente com sensores IoT, coleta e processa essas informações, e emprega um modelo de Machine Learning em conjunto com regras de negócio para classificar o nível de risco e emitir alertas.
+🎯 Contexto do Problema e Justificativa
 
-Este projeto visa demonstrar como a tecnologia e a Inteligência Artificial podem ser aplicadas para mitigar os impactos de eventos naturais extremos, oferecendo uma ferramenta proativa para a Defesa Civil e para a população.
+Recife, conhecida por sua extensa rede hidrográfica e sua localização em uma planície costeira, possui um histórico severo de vulnerabilidade a inundações, especialmente durante os períodos de chuvas intensas. A Global Solution 2025.1 propôs o desafio de criar soluções para eventos naturais extremos. O portal disasterscharter.org foi consultado para contextualizar a gravidade e a frequência global desses desastres, inspirando a escolha do tema "Inundações e Enchentes Urbana/Ribeirinha".
 
+Para garantir a máxima relevância e eficácia deste sistema para Recife (e servir de modelo calibrável para cidades como Palmares - PE), a lógica foi ajustada com dados e parâmetros oficiais da região:
 
+Dados Pluviométricos Históricos: A análise de séries históricas de precipitação diária em Recife (fontes oficiais da APAC/INMET) revelou forte sazonalidade, com picos pluviométricos concentrados entre os meses de abril e julho. Eventos extremos, como o registrado em maio/junho de 2024 com mais de $180\text{ mm}$ de chuva em um único dia em determinadas estações, evidenciam a necessidade urgente de monitoramento automatizado.
 
-## 🎯 Contexto do Problema e Justificativa
+Parâmetros Hidrológicos Oficiais: Os limiares de alerta do sistema foram calibrados com base em dados técnicos da Agência Pernambucana de Águas e Clima (APAC) para o Rio Capibaribe (estação São Lourenço da Mata), conforme o Relatório Progestão 2022:
 
-Recife, conhecida por sua extensa rede hidrográfica e sua localização em uma planície costeira, possui um histórico de vulnerabilidade a inundações, especialmente durante os períodos de chuvas intensas. A Global Solution 2025.1 propôs o desafio de criar soluções para eventos naturais extremos, e o site `disasterscharter.org` foi consultado para contextualizar a gravidade e frequência de tais eventos globalmente, inspirando a escolha do tema "enchentes".
+Cota de Alerta: $300\text{ cm}$
 
-Para garantir a relevância e eficácia deste sistema para Recife, o mesmo foi calibrado com dados específicos da região:
+Cota de Inundação: $400\text{ cm}$
 
-* **Dados Pluviométricos Históricos:** Uma análise de séries históricas de precipitação diária em Recife (fontes governamentais/APAC) revelou uma forte sazonalidade, com picos de chuva concentrados entre abril e julho. Eventos extremos, como o observado em junho de 2024 com mais de 180 mm de chuva em um único dia em certas estações, demonstram a magnitude do desafio.
-  
-* **Parâmetros Hidrológicos Oficiais:** Os limiares de alerta do sistema são baseados nos dados técnicos da Agência Pernambucana de Águas e Clima (APAC) para o Rio Capibaribe (estação São Lourenço da Mata), conforme o *Relatório Progestão 2022*:
-    * **Cota de Alerta:** 300 cm
-    * **Cota de Inundação:** 400 cm
-* **Padrões Meteorológicos:** A simulação considera as classificações de intensidade de chuva do Instituto Nacional de Meteorologia (INMET) e dados climatológicos de temperatura e umidade para Recife.
+Padrões Meteorológicos: A simulação e a análise consideram os critérios de intensidade de chuva do Instituto Nacional de Meteorologia (INMET), combinados com leituras climatológicas de temperatura e umidade relativa do ar.
 
-A combinação desses dados reais e parâmetros oficiais na calibração da simulação e na lógica do sistema assegura que o sistema opere com base na realidade hidrometeorológica de Recife.
+A integração desses dados reais e parâmetros normativos na simulação e na engine de decisão assegura que o sistema opere em conformidade com a realidade hidrometeorológica local.
 
-## ⚙️ Arquitetura Geral do Sistema
+⚙️ Arquitetura Geral do Sistema
 
+O sistema é estruturado em 7 módulos principais integrados:
 
-O sistema é composto pelos seguintes módulos principais:
+Módulo Sensor IoT (Simulador ESP32 no Wokwi): Coleta dados ambientais em tempo real (nível da água, intensidade de chuva, umidade do solo, temperatura e umidade do ar) e executa a simulação de um evento de enchente dividido em 5 fases progressivas.
 
-1.  **Módulo Sensor IoT (Simulador ESP32 no Wokwi):** Coleta de dados ambientais (nível da água, chuva, umidade do solo, temperatura, umidade do ar) em tempo real e simulação um evento de enchente em 5 fases progressivas.
-2.  **Comunicação MQTT:** Os dados simulados são publicados em um tópico MQTT.
-3.  **Receptor de Dados Python:** Um script Python (`receptor_mqtt.py`) assina o tópico MQTT, recebe os dados e os armazena em um banco de dados SQLite.
-4.  **Banco de Dados SQLite (`projeto.db`):** Armazena o histórico de leituras dos sensores.
-5.  **Módulo de Machine Learning (`modelo_ml.py`):** Carrega os dados do banco, treina um modelo de Árvore de Decisão para classificar o risco e oferece uma função de predição.
-6.  **Módulo de Lógica de Negócio (`logica_negocio.py`):** Orquestra a análise, utilizando a predição do ML e aplicando regras de negócio críticas (como chuva acumulada em 24h e cotas de alerta/inundação) para determinar o status final do alerta.
-7.  **Scripts de Apoio:** Inclui um script para inicializar o banco (`inicializar_banco.py`) e um para testar a análise completa (`testar_analise.py`).
+Comunicação MQTT: Os dados aferidos/simulados são publicados periodicamente via protocolo MQTT em tópicos estruturados.
 
-## ✨ Principais Funcionalidades
+Receptor de Dados Python (receptor_mqtt.py): Script backend que atua como subscriber MQTT, recebe as mensagens JSON, valida a carga útil e as persiste no banco de dados.
 
-* Coleta de dados sobre umidade do ar e do solo, tempetura, nível de água e intensidade de chuva
-* Simulação realista de um evento de enchente em 5 fases progressivas.
-* Armazenamento de dados de sensores e da simulação.
-* Treinamento de um modelo de Machine Learning para classificação de risco (Normal, Alerta, Perigo).
-* Aplicação de uma arquitetura híbrida: IA + Regras de Negócio para maior segurança.
-* Cálculo de chuva acumulada nas últimas 24 horas para complementar a análise de risco.
-* Emissão de status de alerta com mensagens claras e cores indicativas.
+Banco de Dados SQLite (projeto.db): Armazena o histórico completo de leituras dos sensores para posterior análise e treinamento do modelo.
 
-## 🛠️ Tecnologias Utilizadas
+Módulo de Machine Learning (modelo_ml.py): Processa o histórico do banco de dados, treina um algoritmo de Árvore de Decisão (Decision Tree Classifier) para classificação do nível de risco e expõe uma interface de predição.
 
-* **Módulo IoT:** Wokwi com ESP32 (linguagem C/C++)
-* **Comunicação:** Protocolo MQTT (Broker público HiveMQ)
-* **Backend & IA:** Python 3.x
-    * `paho-mqtt`: Cliente MQTT
-    * `sqlite3`: Banco de Dados
-    * `pandas`: Manipulação de dados
-    * `scikit-learn`: Machine Learning (DecisionTreeClassifier, train_test_split, accuracy_score)
-    * `datetime`: Manipulação de datas e horas
-* **Controle de Versão:** Git & GitHub
+Módulo de Lógica de Negócio (logica_negocio.py): Atua como camada de decisão híbrida. Combina a inferência do modelo de IA com regras de negócio críticas (como cálculo de chuva acumulada em $24\text{h}$ e ultrapassagem das cotas limítrofes) para definir o status final do alerta.
 
-## 📂 Estrutura do Projeto no GitHub
+Scripts de Apoio e Execução: Inclui o script de criação/inicialização do banco de dados (inicializar_banco.py) e o utilitário para validação e testes da análise completa (testar_analise.py).
 
-```bash
+✨ Principais Funcionalidades
+
+Monitoramento Multi-Variável: Coleta e monitora simultaneamente nível de água, intensidade de chuva, umidade do solo, temperatura e umidade do ar.
+
+Simulador Hidrológico de 5 Fases: Reconstituição automatizada do ciclo completo de uma enchente (da normalidade ao pico e subsequente vazante).
+
+Persistência de Dados Históricos: Armazenamento contínuo das medições dos sensores em banco SQLite.
+
+Classificação Inteligente por ML: Modelo treinado para categorizar os níveis de risco (Normal, Alerta, Perigo/Crítico).
+
+Arquitetura Híbrida de Segurança (IA + Regras de Negócio): Dupla camada de validação que garante que decisões críticas de segurança não dependam unicamente da predição estatística.
+
+Análise de Acumulado de Chuva (24h): Monitoramento temporal da precipitação acumulada para identificação prévia da saturação do solo.
+
+Emissão de Alertas Claros: Geração de diagnósticos de risco com mensagens descritivas e categorização visual de fácil interpretação.
+
+🛠️ Tecnologias Utilizadas
+
+Módulo IoT: Wokwi Simulator com microcontrolador ESP32 (Linguagem C/C++)
+
+Protocolo de Comunicação: MQTT (Broker público HiveMQ)
+
+Backend & Inteligência Artificial: Python 3.x
+
+paho-mqtt: Cliente para comunicação via protocolo MQTT
+
+sqlite3: Banco de dados relacional leve para persistência
+
+pandas: Tratamento, estruturação e limpeza de dados
+
+scikit-learn: Treinamento e avaliação do modelo de ML (DecisionTreeClassifier, train_test_split, accuracy_score)
+
+datetime: Manipulação e cálculos temporais
+
+Controle de Versão & Gestão: Git & GitHub
+
+📂 Estrutura do Projeto no GitHub
+
 gs1-phase4-flood-alert-system/
 ├── .gitignore
 ├── iot-sensor-module/                # Código da simulação ESP32 (Wokwi/PlatformIO)
@@ -101,7 +117,7 @@ gs1-phase4-flood-alert-system/
 │   │   └── main.cpp
 │   ├── diagram.json                  # Circuito simulado no Wokwi
 │   ├── platformio.ini                # Configuração do PlatformIO
-│   ├── wokwi.toml                    # Caminho para firmware na simulação
+│   └── wokwi.toml                    # Caminho para firmware na simulação
 │
 ├── python-backend/                   # Scripts Python do backend e IA
 │   ├── inicializar_banco.py
@@ -111,30 +127,74 @@ gs1-phase4-flood-alert-system/
 │   ├── testar_analise.py
 │   ├── app.py                        # Visualização de dashboard
 │   └── projeto.db                    # Banco de dados SQLite
-|
+│
 ├── img/                              
-|   ├── diagrama.png                  # diagrama wokwi        
-│   ├── logo_fiap.png                 # Logo da faculdade
-|
+│   ├── diagrama.png                  # Diagrama do circuito Wokwi        
+│   └── logo_fiap.png                 # Logo da faculdade
+│
 └── README.md                     
-```
 
-## 🔧 Componentes Detalhados do Sistema
 
-### Módulo Sensor IoT (Simulação ESP32 no Wokwi)
+🔧 Componentes Detalhados do Sistema
 
-O arquivo `iot-sensor-module/src/main.cpp` contém o código para o ESP32 responsável por simular e/ou coletar dados reais de sensores ambientais relevantes para enchentes.
+Módulo Sensor IoT (Simulação ESP32 no Wokwi)
 
-**Principais Características:**
+O arquivo iot-sensor-module/src/main.cpp contém o código do ESP32 responsável pelo monitoramento e simulação dos dados ambientais.
 
-- **Modo Duplo:** O sistema pode operar tanto em modo simulação (evento de enchente em 5 fases) quanto em modo real (leitura dos sensores físicos), alternando entre eles por meio de um botão físico conectado ao ESP32.
-- **Sensores Utilizados:**
-  - **Ultrassônico:** Mede o nível da água (em cm).
-  - **MQ2 (simulado):** Mede a intensidade da chuva (mm/h).
-  - **NTC (simulado):** Mede a umidade do solo (%).
-  - **DHT22:** Mede temperatura do ar (°C) e umidade relativa do ar (%).
-- **Envio dos Dados:** Os dados são enviados a cada 2 segundos para o broker MQTT público (`broker.hivemq.com`) no tópico `fiap/gs/inundacao`, no formato JSON.
+Principais Características:
 
+Modo Duplo de Operação: O sistema pode operar no Modo Simulação (evento de enchente em 5 fases) ou no Modo Real (leitura direta dos sensores físicos), sendo a alternância feita via botão físico com controle de debounce.
+
+Sensores e Mapeamento:
+
+Ultrassônico (HC-SR04): Mede o nível da água (em $\text{cm}$).
+
+MQ2 (simulado): Mede a intensidade da chuva ($\text{mm/h}$).
+
+NTC (simulado): Mede a umidade do solo ($\%$).
+
+DHT22: Mede a temperatura ($^\circ\text{C}$) e a umidade relativa do ar ($\%$).
+
+Envio dos Dados: Os dados são empacotados e transmitidos a cada $2\text{s}$ via MQTT para o broker broker.hivemq.com no tópico fiap/gs/inundacao, em formato JSON.
+
+Funcionamento da Simulação em 5 Fases:
+
+Cada fase dura aproximadamente $45\text{s}$, reproduzindo a progressão real do nível do rio e da precipitação calibrada para a região de Recife:
+
+FASE_1_NORMAL:
+
+Chuva leve ou ausente ($0–10\text{ mm/h}$), nível do rio dentro do leito normal ($\sim 180\text{ cm}$) e solo em condição estável ($\sim 65\%$).
+
+FASE_2_AUMENTO:
+
+Início de tempestade intensa ($50–75\text{ mm/h}$), elevação rápida do nível do rio até atingir a Cota de Alerta ($300\text{ cm}$) e aumento gradual da umidade do solo.
+
+FASE_3_ALERTA:
+
+Chuva forte persistente ($25–50\text{ mm/h}$) sobre solo saturado. O nível do rio ultrapassa os $300\text{ cm}$ e aproxima-se da Cota de Inundação ($400\text{ cm}$).
+
+FASE_4_CRITICO:
+
+A precipitação direta reduz ($5–25\text{ mm/h}$), porém o nível do rio atinge o pico máximo (até $450\text{ cm}$) devido ao escoamento superficial acumulado e saturação total do solo.
+
+FASE_5_RECEDENDO:
+
+Cessação das chuvas ($0–5\text{ mm/h}$), início do escoamento da água com o nível do rio e a umidade do solo retornando gradualmente às cotas normais.
+
+Modo Real:
+
+Ao desativar a simulação pelo botão físico, o microcontrolador ESP32 passa a ler as entradas dos sensores físicos e envia os valores reais diretamente ao backend.
+
+Pipeline de Dados e Fluxo de Informação
+
+Geração e Envio (MQTT): O ESP32 coleta/simula os dados ambientais e envia a mensagem JSON para o broker broker.hivemq.com no tópico fiap/gs/inundacao.
+
+Recepção e Processamento (receptor_mqtt.py): O receptor assina o tópico, extrai o payload JSON, inclui um carimbo de data/hora (timestamp) e insere o registro no banco de dados.
+
+Persistência (projeto.db): O banco SQLite armazena o histórico contínuo das medições.
+
+Inteligência Artificial & Decisão (modelo_ml.py + logica_negocio.py): O backend consulta as medições mais recentes, executa a inferência pelo modelo de ML e aplica as regras de negócio para emitir o parecer final do estado de alerta.
+ 
 **Funcionamento da Simulação de 5 Fases:**
 
 Cada fase dura aproximadamente 45 segundos, simulando a evolução de um evento de enchente realista calibrado para Recife:

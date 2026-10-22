@@ -321,7 +321,7 @@ O repositório já inclui um arquivo de banco de dados (python-backend/projeto.d
    python testar_analise.py
 
    * O que acontece agora: O script carregará automaticamente os dados do arquivo projeto.db, fará o treinamento do modelo de Machine Learning (caso seja a primeira execução) e processará todos os registros, exibindo em tempo real a evolução dos status de alerta.
-   
+
 **Opção 2: Começando do Zero (Gerando Novos Dados)**
 
 Se desejar gerar um novo conjunto de dados ou testar o pipeline completo:
@@ -376,16 +376,19 @@ A calibração e contextualização deste projeto foram baseadas em dados e info
     * Documento de Referência: *Relatório de Atividades e Cumprimento de Metas – Progestão Ciclo 2022 (PE)*.
     * Link Direto: [APAC/ANA - Relatório Progestão PE 2022 (PDF, ver Tabela 5, pág. 10)](https://progestao.ana.gov.br/progestao-1/certificacao/certificacoes-2013-a-2018/certificacao-2022/certificacao-das-metas-federativas-2022/relatorios-progestao-2022/pe_relatorio_progestao_apac_2022.pdf)
 
-* **Dados Pluviométricos Históricos de Recife (Diários/Mensais):**
-    * A análise de eventos de chuva extremos, bem como a calibração da intensidade e da dinâmica da precipitação na simulação do sistema, foram baseadas em dados históricos diários reais de estações pluviométricas em Recife.
-    * Fonte: Agência Pernambucana de Águas e Clima (APAC) - Plataforma de Coleta de Dados.
-    * Link de Acesso ao Monitoramento: [APAC - Monitoramento Pluviométrico](http://www.apac.pe.gov.br/meteorologia/monitoramento-pluviometrico.php](http://old.apac.pe.gov.br/meteorologia/monitoramento-pluvio.php)
-    * Período Específico Analisado para Calibração Detalhada da Simulação: Para a construção do "roteiro" do evento extremo simulado no Wokwi (incluindo a progressão da chuva ao longo das 5 fases), foram analisados em detalhe os dados diários do período de **1º de maio de 2024 a 31 de julho de 2024**.
-    * Justificativa da Escolha do Período (01/05/2024 - 31/07/2024): Este intervalo foi selecionado por:
-        * Abranger o núcleo da estação chuvosa de Recife, historicamente associada aos maiores volumes pluviométricos e riscos de inundação.
-        * Permitir a observação e análise de eventos de precipitação completos, incluindo seus picos, durações e sequências de dias chuvosos.
-        * Representar o ciclo chuvoso completo mais recente, fornecendo dados relevantes para os padrões climáticos atuais.
-    * *Desta análise detalhada, o evento específico ocorrido em meados de junho de 2024 (com picos diários superiores a 180mm em algumas estações) foi utilizado como principal inspiração para modelar as fases e a intensidade da chuva na simulação do Wokwi.*
+Dados Pluviométricos Históricos de Recife (Diários e Mensais)
+​Fonte e Emprego dos Dados:
+A análise de eventos climáticos extremos e a calibração da dinâmica de precipitação no simulador foram baseadas em dados históricos diários reais de estações pluviométricas de Recife.
+​Fonte: Agência Pernambucana de Águas e Clima (APAC) – Plataforma de Coleta de Dados.
+​Acesso aos Dados: APAC - Monitoramento Pluviométrico
+​Período de Referência:
+Para a construção do "roteiro" do evento extremo simulado no Wokwi (que orienta a progressão da chuva ao longo de 5 fases), foram analisados em detalhe os registros diários do período de 1º de maio de 2024 a 31 de julho de 2024.
+​Justificativa do Recorte Temporal (01/05/2024 a 31/07/2024):
+​Núcleo da Estação Chuvosa: Coincide com o quadrimestre de maior índice pluviométrico e histórico recorrente de inundações em Recife.
+​Análise de Eventos Completos: Permitiu mapear o ciclo integral de tempestades, observando sequências de dias chuvosos, durações e volumes de pico.
+​Representatividade Recente: Reflete o padrão de precipitação e eventos climáticos extremos atuais da região.
+​💡 Inspiração para a Simulação (Wokwi):
+A modelagem das 5 fases da chuva no Wokwi tomou como base principal o evento extremo registrado em meados de junho de 2024, no qual algumas estações da cidade registraram picos diários superiores a 180 mm.
 
 * **Padrões de Intensidade de Chuva (mm/h):**
     * Os limiares numéricos para definir a intensidade da chuva instantânea no sistema (ex: >25 mm/h para chuvas fortes, >50 mm/h para eventos extremos) são baseados nos padrões de classificação do Instituto Nacional de Meteorologia (INMET).

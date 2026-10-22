@@ -282,75 +282,46 @@ Este módulo consolida a inteligência do sistema para disparar o diagnóstico f
 
 ---
 
-### ✅ Requisitos
+Pré-requisitos e Dependências
+Para executar este projeto com sucesso, certifique-se de ter instalado em sua máquina:
+ * Visual Studio Code (VS Code)
+ * Git (para clonar o repositório)
+ * Extensões do VS Code:
+   * PlatformIO IDE (ícone da formiguinha 🐜)
+   * Wokwi for VS Code (ícone de simulação <>)
+   * SQL Viewer
+ * Bibliotecas Python necessárias:
+   pip install streamlit pandas matplotlib seaborn paho-mqtt scikit-learn
 
-- [Visual Studio Code (VS Code)](https://code.visualstudio.com/)
-- Extensões instaladas no VS Code:
-  - **PlatformIO IDE** (ícone da formiguinha 🐜)
-  - **Wokwi for VS Code** (ícone com `<>` da simulação)
-  - **SQL Viewer**
-- Git instalado na máquina (para clonar o repositório)
-- As seguintes bibliotecas instaladas:
-  ```bash
-  pip install streamlit pandas matplotlib seaborn paho-mqtt scikit-learn
-  ```
+Passo a Passo
+Parte 1 – Simulação do Hardware (ESP32 no Wokwi)
+ * Clone o repositório
+   Abra o seu terminal e execute o comando abaixo:
+   git clone https://github.com/fiap-ia-2025/gs1-phase4-flood-alert-system.git
 
-## 🔧 Passo a Passo
+ * Abra o projeto no VS Code
+   * Atenção: Não abra a pasta raiz do repositório.
+   * No VS Code, vá em Arquivo > Abrir Pasta... e selecione diretamente a subpasta iot-sensor-module em uma nova janela.
+ * Compile o projeto com o PlatformIO
+   * Clique no ícone da formiguinha 🐜 (PlatformIO) no menu lateral esquerdo do VS Code.
+   * Na aba de projetos, clique em "Build" para compilar o arquivo main.cpp e aguarde a conclusão do processo.
+ * Execute a simulação no Wokwi
+   * Pressione Ctrl + Shift + P (Cmd + Shift + P no Mac) para abrir a Command Palette.
+   * Digite e selecione: Wokwi: Start Simulation.
+   * A simulação abrirá automaticamente no seu navegador com o firmware compilado e pronto para uso.
+> 💡 Nota: O código da pasta iot-sensor-module/ também pode ser carregado diretamente no simulador Wokwi, caso prefira não utilizar o VS Code nesta etapa.
+> 
+Parte 2 – Executando a Integração com Python
+Abra uma nova janela do VS Code e selecione exclusivamente a pasta python-backend.
+O repositório já inclui um arquivo de banco de dados (python-backend/projeto.db) pré-populado com dados de uma simulação de 2 ciclos completos (cerca de 7 minutos e 30 segundos, gerando mais de 200 registros). Essa é a forma recomendada para uma avaliação rápida.
+ * Abra o terminal integrado na pasta correta:
+   cd python-backend
 
-### Parte 1 – Simulação do Hardware (ESP32 no Wokwi)
+ * Execute o script de teste e análise:
+   python testar_analise.py
 
-1. **Clone o repositório**
-
-   - Abra o terminal
-   - Execute o comando:
-
-     ```bash
-     git clone https://github.com/fiap-ia-2025/gs1-phase4-flood-alert-system.git
-     ```
-
-<br>
-
-2. **Abra o VS Code e carregue apenas a pasta iot-sensor-module como uma janela separada.**
-
-- Não abra a pasta raiz do repositório. Clique em "Abrir Pasta" no VS Code e selecione diretamente `iot-sensor-module`.
-
-<br>
-
-3. **Compile o projeto com PlatformIO**
-
-- No VS Code, clique no ícone da formiguinha 🐜 (PlatformIO) no menu lateral esquerdo
-- Clique em **"Build"** para compilar o `main.cpp` (aguarde a conclusão)
-
-<br>
-
-4. **Execute a simulação com Wokwi**
-
-- Pressione `Ctrl+Shift+P` (ou `Cmd+Shift+P` no Mac) para abrir a Command Palette
-- Digite `>Wokwi: Start Simulation` e pressione Enter
-- A simulação será aberta no navegador com o firmware já compilado
-
-
-**OBS: O código em `iot-sensor-module/` pode ser aberto com o PlatformIO no VS Code (passo a passo acima) ou carregado diretamente no simulador Wokwi.**
-
-### Parte 2 – Como Executar a integração com Python
-- Abra outra janela do VS Code e carregue apenas a pasta `python-backend`
-  
-- Existem duas formas de testar o sistema:
-
-**Opção 1: Utilizando o Banco de Dados Existente (Recomendado para Avaliação Rápida)**
-
-O repositório já inclui um arquivo `python-backend/projeto.db` populado com dados de uma simulação de 2 ciclos completos (aproximadamente 7 minutos e 30 segundos de simulação, gerando mais de 200 registros).
-
-1.  Navegue até a pasta `python-backend`:
-    ```bash
-    cd python-backend
-    ```
-2.  Execute o script de teste da análise:
-    ```bash
-    python testar_analise.py
-    ```
-    Isso carregará os dados do `projeto.db` existente, treinará o modelo de ML (se for a primeira vez) e processará todos os registros, mostrando a evolução do status do alerta.
-
+   * O que acontece agora: O script carregará automaticamente os dados do arquivo projeto.db, fará o treinamento do modelo de Machine Learning (caso seja a primeira execução) e processará todos os registros, exibindo em tempo real a evolução dos status de alerta.
+   
 **Opção 2: Começando do Zero (Gerando Novos Dados)**
 
 Se desejar gerar um novo conjunto de dados ou testar o pipeline completo:

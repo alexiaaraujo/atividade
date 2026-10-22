@@ -219,55 +219,64 @@ Cada fase dura aproximadamente 45 segundos, simulando a evolução de um evento 
 - Os valores simulados para cada sensor foram definidos com base em dados históricos e parâmetros oficiais para Recife, garantindo realismo e relevância para o contexto local.
 - O ciclo completo da simulação permite observar a evolução de um evento extremo, desde a normalidade até o pico de inundação e o retorno à estabilidade.
 
-**Resumo Técnico e Diagrama:**
+Sistema Inteligente de Alerta de Enchentes para Recife 
+🔧 Componentes Detalhados do Sistema
+Módulo Sensor IoT (Simulação ESP32 no Wokwi)
+O arquivo iot-sensor-module/src/main.cpp contém o código para o ESP32 responsável por simular e/ou coletar dados reais de sensores ambientais relevantes para enchentes.
+Principais Características:
+ * Modo Duplo: O sistema opera tanto em Modo Simulação (gerando um cenário progressivo de enchente em 5 fases) quanto em Modo Real (lendo sensores físicos), alternados por um botão físico com debounce.
+ * Mapeamento de Sensores:
+   * Ultrassônico: Nível da água (\text{cm}).
+   * MQ2 (Simulado): Intensidade da chuva (\text{mm/h}).
+   * NTC (Simulado): Umidade do solo (\%).
+   * DHT22: Temperatura do ar (^\circ\text{C}) e umidade relativa do ar (\%).
+ * Publicação MQTT: A cada 2\text{ s}, os dados são serializados em um payload JSON e enviados para o broker público broker.hivemq.com no tópico fiap/gs/inundacao.
+Estrutura do Payload JSON enviado pelo ESP32:
+{
+  "water_level_cm": 180.5,
+  "rain_mm_hour": 5.0,
+  "soil_humidity_pct": 65.0,
+  "temp_c": 28.5,
+  "humidity_air_pct": 80.0
+}
 
-- O ESP32 conecta-se automaticamente ao Wi-Fi e ao broker MQTT.
-- Alternância entre modo simulação e modo real via botão físico (com debounce).
-- Dados enviados em formato JSON, incluindo: `water_level_cm`, `rain_mm_hour`, `soil_humidity_pct`, `temp_c`, `humidity_air_pct`.
-- Ao final da FASE_5_RECEDENDO, o ciclo é reiniciado automaticamente.
-
+Ciclo da Simulação (5 Fases Progressivas - Duração de ~45s cada):
+ * FASE_1_NORMAL: Chuva leve (0-10\text{ mm/h}), rio seguro (\sim 180\text{ cm}), solo normal (\sim 65\%).
+ * FASE_2_AUMENTO: Tempestade (50-75\text{ mm/h}), rio subindo em direção ao alerta (\sim 300\text{ cm}).
+ * FASE_3_ALERTA: Chuva forte (25-50\text{ mm/h}), rio ultrapassa a cota de alerta (\ge 300\text{ cm}) e se aproxima do perigo.
+ * FASE_4_CRITICO: Chuva diminui (5-25\text{ mm/h}), mas o nível do rio atinge o pico máximo por acúmulo de água (\le 450\text{ cm}).
+ * FASE_5_RECEDENDO: Chuva cessa (0-5\text{ mm/h}), nível do rio e umidade retornam gradualmente à estabilidade (reiniciando o ciclo).
 <img src="img/diagrama.png" alt="diagrama do circuito" border="0" width="60%" height="40%">
+> Nota para o Desenvolvedor: Este módulo garante um fluxo constante de dados sintéticos realistas, essenciais para popular o banco de dados e treinar o modelo de Machine Learning antes de testes em hardware real.
+> 
+Pipeline de Dados
+O fluxo de dados segue uma arquitetura pub/sub simples e desacoplada:
+[ESP32 / Wokwi] --( MQTT / JSON )--> [Broker HiveMQ] --( Python Subscriber )--> [SQLite (projeto.db)]
 
-> Este módulo é fundamental para fornecer dados realistas e variados ao backend Python, permitindo o treinamento e validação do modelo de Machine Learning e das regras de negócio do sistema de alerta.
-### Pipeline de Dados
-
-1.  **MQTT:** O ESP32 (Wokwi) envia os dados dos sensores como um payload JSON para o broker público `broker.hivemq.com` no tópico `fiap/gs/inundacao`.
-2.  **Receptor Python (`receptor_mqtt.py`):** Este script se inscreve no tópico MQTT, recebe as mensagens JSON, extrai os dados dos sensores e os insere na tabela `sensores` do banco de dados `projeto.db`, adicionando um timestamp do momento da inserção.
-3.  **Banco de Dados (`projeto.db`):** Um arquivo SQLite que armazena o histórico de leituras dos sensores, servindo como fonte de dados para o treinamento do modelo de ML e para testes. O script `inicializar_banco.py` cria a tabela se ela não existir.
-
-### Modelo de Machine Learning (`modelo_ml.py`)
-
-* **Escolha do Modelo (Árvore de Decisão):** Foi escolhido um `DecisionTreeClassifier` da biblioteca `scikit-learn`. Esta escolha se justifica por:
-    * Ser um modelo eficaz para problemas de classificação.
-    * Ser relativamente fácil de entender e interpretar (suas regras de decisão podem ser visualizadas).
-    * Ter um bom desempenho computacional para este volume de dados.
-* **Fonte dos Dados de Treinamento:** O modelo é treinado com os dados coletados pela simulação no Wokwi e armazenados no `projeto.db`. A função `definir_risco_real` neste script é crucial, pois ela rotula cada registro de acordo com os parâmetros calibrados de Recife (nível do rio, intensidade da chuva, umidade do solo), criando o "gabarito" para o aprendizado da IA.
-* **Arquitetura Híbrida (ML + Regras de Negócio):** Embora o modelo de ML seja treinado para prever o risco, a decisão final no `logica_negocio.py` considera essa predição, mas também aplica regras de negócio críticas e inegociáveis (como os níveis absolutos de inundação do rio ou chuva acumulada). Isso garante um sistema mais seguro e confiável, onde o ML atua como um analista inteligente e as regras de negócio como um protocolo de emergência.
-* **Treinamento "Lazy Loading":** O modelo é treinado apenas uma vez, na primeira vez que uma predição é solicitada (através da função `prever_risco`). Isso é eficiente, pois evita retreinamentos desnecessários a cada nova leitura de sensor, especialmente em um contexto de protótipo ou demonstração. Para um sistema em produção, um retreinamento periódico com novos dados seria implementado.
-
-### Lógica de Negócio e Sistema de Alerta (`logica_negocio.py`)
-
-Este módulo consolida as informações para gerar o alerta final.
-1.  Recebe os dados atuais do sensor.
-2.  Chama a função `prever_risco` do `modelo_ml.py` para obter uma predição inicial da IA.
-3.  Calcula a `chuva_acumulada_24h` consultando o histórico no banco de dados.
-4.  Aplica as regras de override:
-    * Se `chuva_acumulada_24h >= 100mm`, o status é `Perigo`.
-    * Se `nivel_agua >= 400cm`, o status é `Perigo`.
-    * Se `nivel_agua >= 300cm`, o status é (no mínimo) `Alerta`.
-5.  Determina o `status_final` e retorna um dicionário com o status, cor e mensagem.
-
-## ▶️ Como Rodar o Projeto
-
-### ⚠️ Importante: Estratégia de Uso dos Modos (Simulação vs. Real)
-
-O Módulo Sensor IoT opera em dois modos distintos, e é crucial entender o propósito de cada um para o treinamento e teste do sistema de IA:
-
-* **Modo Simulação (Para Treinamento de Qualidade):**
-    Este modo gera o cenário completo e calibrado de uma enchente em 5 fases. **É o modo que deve ser utilizado para gerar o `projeto.db` destinado ao treinamento inicial do modelo**, pois garante um conjunto de dados rico, com exemplos de todas as categorias de risco (Normal, Alerta, Perigo).
-
-* **Modo Real (Para Teste e Validação em Tempo Real):**
-    Este modo lê os valores dos controles manuais no Wokwi. **É ideal para testar a resposta do sistema *já treinado* a dados arbitrários e validar o fluxo de ponta a ponta.** Não é recomendado usar dados gerados neste modo para o treinamento inicial, pois eles podem não conter a diversidade e a progressão necessárias.
+ * Broker MQTT: Intermedeia a comunicação pub/sub no tópico fiap/gs/inundacao.
+ * Receptor Python (receptor_mqtt.py): Script que escuta o tópico em tempo real, faz o parse do JSON recebido e insere os registros na tabela sensores do banco de dados projeto.db junto com um timestamp.
+ * Banco de Dados SQLite (projeto.db): Armazena o histórico persistente das leituras dos sensores. O script inicializar_banco.py realiza o setup inicial da tabela caso ela não exista.
+Modelo de Machine Learning (modelo_ml.py)
+ * Algoritmo Escolhido (DecisionTreeClassifier): Utiliza uma Árvore de Decisão da biblioteca scikit-learn por ser leve, rápida de treinar e de fácil interpretação lógica das regras de divisão de classes.
+ * Geração do Gabarito (Target): A função definir_risco_real analisa os dados históricos salvos no SQLite e aplica os limiares oficiais da APAC (Recife) para rotular cada linha de dado com sua respectiva classe de risco: Normal, Alerta ou Perigo.
+ * Arquitetura Híbrida (IA + Regras de Segurança): O modelo de Machine Learning atua como um preditor inteligente, mas a decisão final passa por um motor de regras estritas (em logica_negocio.py) para evitar falsos negativos em situações críticas.
+ * Carregamento Otimizado (Lazy Loading): O modelo é treinado apenas na primeira chamada de predição (prever_risco), evitando o overhead de re-treinamento a cada mensagem recebida pelo broker.
+Lógica de Negócio e Sistema de Alerta (logica_negocio.py)
+Este módulo consolida a inteligência do sistema para disparar o diagnóstico final:
+ * Recebe os dados atuais da leitura do sensor.
+ * Consulta o modelo_ml.py para obter a predição inicial da IA.
+ * Consulta o histórico recente no banco SQLite para calcular a chuva acumulada nas últimas 24 horas.
+ * Regras de Sobrescrita (Overrides de Segurança):
+   * Se chuva_acumulada_24h \ge 100\text{ mm}, o status assume obrigatoriamente Perigo.
+   * Se nivel_agua \ge 400\text{ cm} (Cota de Inundação), o status assume obrigatoriamente Perigo.
+   * Se nivel_agua \ge 300\text{ cm} (Cota de Alerta), o status assume no mínimo Alerta.
+ * Retorna um dicionário estruturado contendo o status final, a cor indicativa para interfaces e a mensagem explicativa.
+▶ Como Rodar o Projeto
+⚠️ Estratégia de Uso: Simulação vs. Modo Real
+ * Modo Simulação (Recomendado para o Treinamento Inicial):
+   Gera o cenário completo e calibrado de enchente em 5 fases. Use este modo primeiro para popular o projeto.db com uma base de dados rica em todas as faixas de risco (Normal, Alerta, Perigo).
+ * Modo Real / Manual (Para Testes Pontuais):
+   Lê os potenciômetros e botões físicos do circuito no Wokwi. Ideal para testar o sistema já treinado injetando valores arbitrários para validar o pipeline de ponta a ponta.
 
 > **Recomendação:** Para replicar os resultados e garantir a maior acurácia do modelo, sempre gere seu conjunto de dados de treinamento utilizando o **Modo Simulação**.
 
